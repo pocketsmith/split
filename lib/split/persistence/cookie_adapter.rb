@@ -32,7 +32,7 @@ module Split
         def set_cookie(value = {})
           cookie_key = :split.to_s
           cookie_value = default_options.merge(value: JSON.generate(value))
-          if action_dispatch?
+          if action_controller?
             # The "send" is necessary when we call ab_test from the controller
             # and thus @context is a rails controller, because then "cookies" is
             # a private method.
@@ -88,8 +88,8 @@ module Split
           Split.configuration.persistence_cookie_domain
         end
 
-        def action_dispatch?
-          defined?(Rails) && @response.is_a?(ActionDispatch::Response)
+        def action_controller?
+          defined?(Rails) && @response.is_a?(ActionController::Response)
         end
     end
   end
