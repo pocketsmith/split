@@ -9,11 +9,11 @@ module Split
     def ab_test(metric_descriptor, control = nil, *alternatives)
       begin
         experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
-        alternative = if Split.configuration.enabled && !exclude_visitor?
+        alternative = if Split.configuration.enabled && !exclude_visitor?(experiment)
           experiment.save
           raise(Split::InvalidExperimentsFormatError) unless (Split.configuration.experiments || {}).fetch(experiment.name.to_sym, {})[:combined_experiments].nil?
           trial = Trial.new(user: ab_user, experiment: experiment,
-              override: override_alternative(experiment.name), exclude: exclude_visitor?,
+              override: override_alternative(experiment.name), exclude: exclude_visitor?(experiment),
               disabled: split_generically_disabled?)
           alt = trial.choose!(self)
           alt ? alt.name : nil
@@ -141,8 +141,8 @@ module Split
       @ab_user ||= User.new(self)
     end
 
-    def exclude_visitor?
-      defined?(request) && (instance_exec(request, &Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?)
+    def exclude_visitor?(experiment)
+      defined?(request) && (instance_exec(request, experiment, &Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?)
     end
 
     def is_robot?
