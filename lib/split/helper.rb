@@ -142,7 +142,7 @@ module Split
     end
 
     def exclude_visitor?(experiment)
-      defined?(request) && (instance_exec(request, experiment, &Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?)
+      instance_exec(self, experiment, &Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?
     end
 
     def is_robot?

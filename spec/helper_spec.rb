@@ -716,7 +716,7 @@ describe Split::Helper do
     context "using a proc to configure custom logic" do
       before(:each) do
         Split.configure do |c|
-          c.ignore_filter = proc { |request| true } # ignore everything
+          c.ignore_filter = proc { |context| true } # ignore everything
         end
       end
 
