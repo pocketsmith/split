@@ -70,12 +70,13 @@ module Split
     end
 
     def ab_finished(metric_descriptor, options = { reset: true })
-      return if exclude_visitor? || Split.configuration.disabled?
+      return if Split.configuration.disabled?
       metric_descriptor, goals = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
         experiments.each do |experiment|
+          next if exclude_visitor?(experiment)
           next if override_present?(experiment.key)
           finish_experiment(experiment, options.merge(goals: goals))
         end
@@ -86,12 +87,13 @@ module Split
     end
 
     def ab_record_extra_info(metric_descriptor, key, value = 1)
-      return if exclude_visitor? || Split.configuration.disabled? || value.nil?
+      return if Split.configuration.disabled? || value.nil?
       metric_descriptor, _ = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
         experiments.each do |experiment|
+          next if exclude_visitor?(experiment)
           alternative_name = ab_user[experiment.key]
 
           if alternative_name
